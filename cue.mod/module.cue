@@ -1,4 +1,4 @@
-module: "deepbrook.io/argocd-cmp-cuelang"
+module: "github.com/deepbrook/argocd-cmp-cuelang"
 language: {
 	version: "v0.15.1"
 }

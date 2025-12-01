@@ -1,14 +1,13 @@
 package config
 
-import "deepbrook.io/argocd-cmp-cuelang/params"
-
+import "github.com/deepbrook/argocd-cmp-cuelang/params"
 
 cmd: #CmpConfigBase & {
 	metadata: name: "cue-cmd"
 	spec: {
 		generate: {
 			command: ["cue"]
-			args: ["cmd", "generate", "deepbrook.io/argocd-cmp-cuelang/exec/cmd"]
+			args: ["cmd", "generate", "github.com/deepbrook/argocd-cmp-cuelang/exec/cmd"]
 		}
 
 		discover: {
@@ -21,7 +20,7 @@ cmd: #CmpConfigBase & {
 		parameters: {
 			static: params.#CmdParams.static
 			dynamic: {
-				command: ["cue", "cmd", "dynamic-params", "deepbrook.io/argocd-cmp-cuelang/exec/cmd"]}
+				command: ["cue", "cmd", "dynamic-params", "github.com/deepbrook/argocd-cmp-cuelang/exec/cmd"]}
 		}
 	}
 }
