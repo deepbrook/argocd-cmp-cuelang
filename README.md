@@ -26,7 +26,7 @@ The `config.yaml` required by ArgoCD must be supplied via a `ConfigMap` resource
 Either copy it from this repository, or let the `argocd-cmp-cuelang` module generate one for you:
 
 ```shell
-> cue cmd create-cm cue.dev/deepbrook/argocd-cmp-cuelang:setup > cm.yaml
+> cue cmd create-cm github.com/deepbrook/argocd-cmp-cuelang:plugin > cm.yaml
 ```
 
 Inspect the config with `cat cm.yaml` or an editor of your choice, if you like.
@@ -45,7 +45,7 @@ a sidecar container to it.
 Again, you can generate a patch using the  `argocd-cmp-cuelang` module:
 
 ```shell
-> cue cmd create-patch cue.dev/deepbrook/argocd-cmp-cuelang:setup > patch.yaml
+> cue cmd create-patch github.com/deepbrook/argocd-cmp-cuelang:plugin > patch.yaml
 ```
 
 Feel free to inspect and adapt `patch.yaml` as you need; by default, we use `cuelange/cue`
@@ -268,7 +268,7 @@ spec:
 You can inspect the available parameters by running:
 
 ```
-> cue cmd help github.com/deepbrook/argocd-cmp-cuelang:setup
+> cue cmd parameters github.com/deepbrook/argocd-cmp-cuelang
 ```
 
 [per the official docs]: https://argo-cd.readthedocs.io/en/stable/operator-manual/config-management-plugins/#installing-a-config-management-plugin

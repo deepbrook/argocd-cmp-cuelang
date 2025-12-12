@@ -1,10 +1,9 @@
-package cli
+package plugin
 
 import (
 	"tool/cli"
 	"encoding/yaml"
 )
-
 
 patch: spec: template: spec: {
 	containers: [{
