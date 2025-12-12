@@ -1,6 +1,8 @@
-package cli
+package plugin
 
 import "cue.dev/x/k8s.io/api/core/v1"
+
+import "encoding/yaml"
 
 cm_data: {
 	apiVersion: "argoproj.io/v1alpha1"

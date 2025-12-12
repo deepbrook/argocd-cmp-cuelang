@@ -1,4 +1,4 @@
-package cli
+package plugin
 
 import "cue.dev/x/k8s.io/api/core/v1"
 

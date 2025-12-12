@@ -1,4 +1,4 @@
-package cli
+package plugin
 
 import (
 	"tool/exec"
