@@ -11,7 +11,7 @@ import (
 
 env_vars: os.Getenv & {
 	ARGOCD_APP_SOURCE_PATH: string
-	ARGOCD_APP_PARAMETERS:  string
+	ARGOCD_APP_PARAMETERS:  string | *"[]"
 	ARGOCD_ENV_DEBUG:       string | *"false"
 }
 
@@ -43,20 +43,20 @@ command: "dynamic-params": {
 // are always honored.
 command: generate: {
 
-	options: string | [...]
-	if parameters["cue-command"] == "eval" {
+	options: string | [...] | *[]
+	if parameters["cue-command"].string == "eval" {
 		options: [
 			if len(parameters.package.string) > 0 {parameters.package.string},
 			"--out=\(parameters.output.string)",
 			for e in parameters.expressions.array {"-e=\(e)"},
 		]
 	}
-	if parameters["cue-command"] == "cmd" {
+	if parameters["cue-command"].string == "cmd" {
 		options: [parameters.workflow.string, if len(parameters.package.string) > 0 {parameters.package.string}]
 	}
 
 	cmd_list: list.Concat([
-		["cue", parameters.cue_command.string],
+		["cue", parameters["cue-command"].string],
 		options,
 		[for t in parameters.tags.array {"-t=\(t)"}], // Always add -t/--inject parameters
 	])
