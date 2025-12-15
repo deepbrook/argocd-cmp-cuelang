@@ -17,8 +17,11 @@ env_vars: os.Getenv & {
 
 DEBUG: json.Unmarshal(env_vars.ARGOCD_ENV_DEBUG) & bool
 
+
 // Validate the parameters ArgoCD has given us via ARGOCD_APP_PARAMETERS, populating default values where necessary
-parameters: #Params.dynamic & {for p in json.Unmarshal(env_vars.ARGOCD_APP_PARAMETERS) {(p.name): p}}
+given: json.Unmarshal(env_vars.ARGOCD_APP_PARAMETERS) & #UNMARSHALLED_ARGOCD_APP_PARAMS
+parameters: #Params & {for p in given {(p.name): p & #Params["\(p.name)"]}}
+
 
 // Workflow to post 'dynamic' parameters - the output is used by ArgoCD to populate fields in the WebView of an Application.
 command: "dynamic-params": {
@@ -43,7 +46,7 @@ command: "dynamic-params": {
 // are always honored.
 command: generate: {
 
-	options: string | [...] | *[]
+	options: [...string] | *[]
 	if parameters["cue-command"].string == "eval" {
 		options: [
 			if len(parameters.package.string) > 0 {parameters.package.string},
