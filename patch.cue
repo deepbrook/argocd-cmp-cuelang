@@ -11,6 +11,7 @@ patch: spec: template: spec: {
 			runAsNonRoot: true
 			runAsUser:    999
 		}
+		env: [{ name: "CUE_CACHE_DIR", value: "/tmp/.cache"}]
 		volumeMounts: [
 			{
 				mountPath: "/var/run/argocd"
