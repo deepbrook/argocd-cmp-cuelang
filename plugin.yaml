@@ -1,0 +1,69 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ConfigManagementPlugin
+metadata:
+  name: cuelang
+spec:
+  version: v0.15.1
+  init:
+    command:
+      - cue
+    args:
+      - version
+  generate:
+    command:
+      - cue
+    args:
+      - cmd
+      - generate
+      - github.com/deepbrook/argocd-cmp-cuelang:plugin
+  discover:
+    fileName: ./*.cue
+    find:
+      glob: '**/*.cue'
+  parameters:
+    static:
+      - collectionType: string
+        title: CUE sub-command
+        name: cue-command
+        tooltip: 'CUE sub-command to invoke (default: `eval`)'
+        required: false
+        string: eval
+      - collectionType: string
+        string: ""
+        title: CUE Package
+        name: package
+        tooltip: CUE Package to run `cue` with.
+        required: false
+      - collectionType: array
+        array: []
+        title: Injections
+        name: tags
+        tooltip: list of key=value items to inject using the `-t` flag.
+        required: false
+      - collectionType: string
+        title: Format
+        name: output
+        tooltip: Output format to use when running `cue eval`. Restricted to JSON/YAML/text. When using 'text', please make sure that the result has been encoded to JSON or YAML, as ArgoCD does not accept other formats.
+        required: false
+        string: text
+      - collectionType: array
+        title: Expressions
+        name: expressions
+        tooltip: 'Expressions to pass to `cue eval` via `-e/--expression` flag (default: none).'
+        array:
+          - manifests
+        required: false
+      - collectionType: string
+        title: CUE Workflow Command
+        name: workflow
+        tooltip: 'Name of the workflow command defined in the `*_tool.cue` file called (default: `build`). Ignored if `cue-command` is `eval`.'
+        required: false
+        string: build
+    dynamic:
+      command:
+        - cue
+        - cmd
+        - dynamic-params
+        - github.com/deepbrook/argocd-cmp-cuelang:plugin
+  preserveFileMode: false
+  provideGitCreds: false
