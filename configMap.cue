@@ -29,7 +29,7 @@ cm_data: {
 		}
 
 		parameters: {
-			static: #Params.static
+			static: [for p, schema in #Params {schema}]
 			dynamic: {
 				command: ["cue", "cmd", "dynamic-params", "github.com/deepbrook/argocd-cmp-cuelang"]}
 		}

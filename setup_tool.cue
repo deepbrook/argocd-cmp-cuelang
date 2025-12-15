@@ -39,7 +39,7 @@ patch: spec: template: spec: {
 
 // Print the plugin's supported parameters to stdout
 command: parameters: {
-	out: cli.Print & {text: yaml.Marshal(#Params.static)}
+	out: cli.Print & {text: yaml.Marshal(#Params)}
 }
 // Print a patch for argocd-repo-server
 command: "create-patch": {
