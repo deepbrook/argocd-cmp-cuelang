@@ -41,6 +41,7 @@ patch: spec: template: spec: {
 command: parameters: {
 	out: cli.Print & {text: yaml.Marshal(#Params)}
 }
+
 // Print a patch for argocd-repo-server
 command: "create-patch": {
 	out: cli.Print & {text: yaml.Marshal(patch)}
