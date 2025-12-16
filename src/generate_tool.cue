@@ -71,6 +71,5 @@ command: generate: {
 
 	proc: exec.Run & {
 		cmd: cmd_list
-		dir: env_vars.ARGOCD_APP_SOURCE_PATH
 	}
 }
