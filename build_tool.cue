@@ -3,20 +3,19 @@ package build
 import (
     "tool/exec"
     "tool/file"
-
+    "strings"
 )
 
-release: string @tag(version)
+version_tag: string @tag(version)
 
-command: build: {
-
+command: "module": {
     prepareVersion: file.Create & {
         filename: "src/version.cue"
         contents: """
         // This file is auto-generated - do not edit!
         package plugin
 
-        version: "\(release)"
+        version: "\(version_tag)"
         """
     }
 
@@ -33,32 +32,46 @@ command: build: {
 
     commit: exec.Run & {
         $after: [prepareVersion, prepareConfig]
-        cmd: ["git", "commit", "-m", "chore: Release Module Version \(release)", "src/version.cue", "plugin.yaml"]
+        cmd: ["git", "commit", "-m", "chore: Release Module Version \(version_tag)", "src/version.cue", "plugin.yaml"]
     }
 
     tag: exec.Run & {
         $after: [commit]
-        cmd: ["git", "tag", "-s", "-m", "argocd-cmp-cuelang-\(release)", release]
+        cmd: ["git", "tag", "-a", "-m", "argocd-cmp-cuelang-\(version_tag)", version_tag]
     }
 
-    // cue_version: exec.Run & {
-    //     cmd: ["cue", "eval", "./src/cue.mod/module.cue", "-e", "language.version", "--out", "yaml"]
-    //     stdout: string
-    // }
+    publish: exec.Run & {
+        $after: [commit]
+        dir: "src/"
+        cmd: ["cue", "mod", "publish", version_tag]
+    }
 
-    // container: exec.Run & {
-    //     $after: [prepare, cue_version, tag]
-    //     cmd: [
-    //         "podman", "build", ".",
-    //         "--tag", "ghcr.io/deepbrook/argocd-cmp-cuelang:\(mod_version)",
-    //         "--build-arg", "CUE_VERSION=\(strings.Trim(cue_version.stdout, "v\n"))"]
-    // }
+    push: exec.Run & {
+        $after: [tag]
+        cmd: ["git", "push", "origin", "tag", version_tag]
+    }
+}
 
-    // push: exec.Run & {
-    //     $after: [container]
-    //     cmd: [
-    //         "podman", "push",
-    //         "ghcr.io/deepbrook/argocd-cmp-cuelang:\(mod_version)",
-    //         ]
-    // }
+command: "container": {
+
+    cue_version: exec.Run & {
+        cmd: ["cue", "eval", "./src/cue.mod/module.cue", "-e", "language.version", "--out", "yaml"]
+        stdout: string
+    }
+
+    build: exec.Run & {
+        $after: [cue_version]
+        cmd: [
+            "podman", "build", ".",
+            "--tag", "ghcr.io/deepbrook/argocd-cmp-cuelang:\(version_tag)",
+            "--build-arg", "CUE_VERSION=\(strings.Trim(cue_version.stdout, "v\n"))"]
+    }
+
+    push: exec.Run & {
+        $after: [build]
+        cmd: [
+            "podman", "push",
+            "ghcr.io/deepbrook/argocd-cmp-cuelang:\(version_tag)",
+        ]
+    }
 }
