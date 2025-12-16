@@ -8,7 +8,7 @@ import (
 
 version_tag: string @tag(version)
 
-command: "module": {
+command: "publish": {
     prepareVersion: file.Create & {
         filename: "src/version.cue"
         contents: """
@@ -50,16 +50,13 @@ command: "module": {
         $after: [tag]
         cmd: ["git", "push", "origin", "tag", version_tag]
     }
-}
-
-command: "container": {
 
     cue_version: exec.Run & {
         cmd: ["cue", "eval", "./src/cue.mod/module.cue", "-e", "language.version", "--out", "yaml"]
         stdout: string
     }
 
-    build: exec.Run & {
+    build_image: exec.Run & {
         $after: [cue_version]
         cmd: [
             "podman", "build", ".",
@@ -67,8 +64,8 @@ command: "container": {
             "--build-arg", "CUE_VERSION=\(strings.Trim(cue_version.stdout, "v\n"))"]
     }
 
-    push: exec.Run & {
-        $after: [build]
+    push_image: exec.Run & {
+        $after: [build_image]
         cmd: [
             "podman", "push",
             "ghcr.io/deepbrook/argocd-cmp-cuelang:\(version_tag)",
