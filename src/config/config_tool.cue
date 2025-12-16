@@ -56,4 +56,3 @@ command: "patch": {
 
 	out: cli.Print & {text: result}
 }
-
