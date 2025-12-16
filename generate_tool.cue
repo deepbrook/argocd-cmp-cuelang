@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"list"
 	"strings"
+	"github.com/deepbrook/argocd-cmp-cuelang/params"
 )
 
 env_vars: os.Getenv & {
@@ -19,13 +20,13 @@ DEBUG: json.Unmarshal(env_vars.ARGOCD_ENV_DEBUG) & bool
 
 
 // Validate the parameters ArgoCD has given us via ARGOCD_APP_PARAMETERS, populating default values where necessary
-given: json.Unmarshal(env_vars.ARGOCD_APP_PARAMETERS) & #UNMARSHALLED_ARGOCD_APP_PARAMS
-parameters: #Params & {for p in given {(p.name): p & #Params["\(p.name)"]}}
+_given: json.Unmarshal(env_vars.ARGOCD_APP_PARAMETERS) & params.#UNMARSHALLED_ARGOCD_APP_PARAMS
+given: params.#Definitions & {for p in _given {(p.name): p & params.#Definitions["\(p.name)"]}}
 
 
 // Workflow to post 'dynamic' parameters - the output is used by ArgoCD to populate fields in the WebView of an Application.
 command: "dynamic-params": {
-	out: cli.Print & {text: json.Marshal(parameters)}
+	out: cli.Print & {text: json.Marshal(given)}
 }
 
 // Execute a `cue` sub-command with the given CLI options.
@@ -47,21 +48,21 @@ command: "dynamic-params": {
 command: generate: {
 
 	options: [...string] | *[]
-	if parameters["cue-command"].string == "eval" {
+	if given["cue-command"].string == "eval" {
 		options: [
-			if len(parameters.package.string) > 0 {parameters.package.string},
-			"--out=\(parameters.output.string)",
-			for e in parameters.expressions.array {"-e=\(e)"},
+			if len(given.package.string) > 0 {given.package.string},
+			"--out=\(given.output.string)",
+			for e in given.expressions.array {"-e=\(e)"},
 		]
 	}
-	if parameters["cue-command"].string == "cmd" {
-		options: [parameters.workflow.string, if len(parameters.package.string) > 0 {parameters.package.string}]
+	if given["cue-command"].string == "cmd" {
+		options: [given.workflow.string, if len(given.package.string) > 0 {given.package.string}]
 	}
 
 	cmd_list: list.Concat([
-		["cue", parameters["cue-command"].string],
+		["cue", given["cue-command"].string],
 		options,
-		[for t in parameters.tags.array {"-t=\(t)"}], // Always add -t/--inject parameters
+		[for t in given.tags.array {"-t=\(t)"}], // Always add -t/--inject parameters
 	])
 
 	if DEBUG {

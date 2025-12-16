@@ -1,24 +1,26 @@
-package plugin
+package config
 
-import "cue.dev/x/k8s.io/api/core/v1"
-
-import "encoding/yaml"
+import (
+	"encoding/yaml"
+	"cue.dev/x/k8s.io/api/core/v1"
+	"github.com/deepbrook/argocd-cmp-cuelang/params"
+	"github.com/deepbrook/argocd-cmp-cuelang:plugin"
+)
 
 cm_data: {
 	apiVersion: "argoproj.io/v1alpha1"
 	kind:       "ConfigManagementPlugin"
 	metadata: name: "cuelang"
 	spec: {
-		version: "v0.15.1"
-
+		version: plugin.version
 		init: {
 			command: ["cue"]
-			args: ["version"]
+			args: ["mod", "get", "github.com/deepbrook/argocd-cmp-cuelang@\(plugin.version)"]
 		}
 
 		generate: {
 			command: ["cue"]
-			args: ["cmd", "generate", "github.com/deepbrook/argocd-cmp-cuelang:plugin"]
+			args: ["cmd", "generate", "github.com/deepbrook/argocd-cmp-cuelang@\(plugin.version):plugin"]
 		}
 
 		discover: {
@@ -29,9 +31,9 @@ cm_data: {
 		}
 
 		parameters: {
-			static: [for p, schema in #Params {schema}]
+			static: [for p, schema in params.Definitions {schema}]
 			dynamic: {
-				command: ["cue", "cmd", "dynamic-params", "github.com/deepbrook/argocd-cmp-cuelang:plugin"]}
+				command: ["cue", "cmd", "dynamic-params", "github.com/deepbrook/argocd-cmp-cuelang@\(plugin.version):plugin"]}
 		}
 
 		preserveFileMode: false

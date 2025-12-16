@@ -13,59 +13,31 @@ The only thing necessary to get started with this cmp are three things:
 1. A patched `argocd-repo-server`
 1. An image with `cue` installed
 
-In the following sections we provide `kubectl` snippets to apply the provided `ConfigMap` and
+In the following section we provide `kubectl` snippets to apply the provided `ConfigMap` and
 `Deployment` patches to install `argocd-cmp-cuelang`. Please be aware that we assume that
 ArgoCD has been installed into the `argocd` namespace, and the name of the ArgoCD Repo Server
 deployment is `argocd-repo-server`; should this **not** be the case, you will need to update
 the snippets accordingly.
 
-### Creating the CMP `ConfigMap`
+### Using the argocd-cmp-cuelang sidecar
 
-The `config.yaml` required by ArgoCD must be supplied via a `ConfigMap` resource (unless you're using your own image, in which case you may bake the config into it).
-
-Either copy it from this repository, or let the `argocd-cmp-cuelang` module generate one for you:
-
-```shell
-> cue cmd create-cm github.com/deepbrook/argocd-cmp-cuelang:plugin > cm.yaml
-```
-
-Inspect the config with `cat cm.yaml` or an editor of your choice, if you like.
-Then, apply:
-
-```
-> kubectl apply -f cm.yaml --namespace=argocd
-```
-
-
-### Patching the `argocd-repo-server` deployment
-
-As [per the official docs][], you'll have to patch your `argocd-repo-server`, adding
-a sidecar container to it.
-
-Again, you can generate a patch using the  `argocd-cmp-cuelang` module:
+We provide a ready-to-go Container on our GHCR repo, which comes with a baked-in plugin YAML
+for `argocd-cmp-cuelang`. You can patch your deployment as follows:
 
 ```shell
-> cue cmd create-patch github.com/deepbrook/argocd-cmp-cuelang:plugin > patch.yaml
+> cue mod get github.com/deepbrook/argocd-cmp-cuelang@<PLUGIN_VERSION>  # Install the module in your local cue.mod
+> cue cmd patch github.com/deepbrook/argocd-cmp-cuelang/config > patch.yaml
+> cat patch.yaml  # Inspect the patch
+> kubectl patch deployment --namespace=argocd argocd-repo-server --patch-file=patch.yaml
 ```
 
-Feel free to inspect and adapt `patch.yaml` as you need; by default, we use `cuelange/cue`
-as the image for the side-car.
+Note: if you prefer mounting the `plugin.yaml` as a volume from a `ConfigMap` instead, pass `-t cm=true` to `cue cmd patch`. It will declare the needed volumes and mounts, and generate a ConfigMap manifest for you.
 
-> [!info]
-> If you're using `cue cmd` and your workflows require additional
-> tools or binaries, see [Additional Tooling](##-additional-tooling) on how to provide those.
-
-Finally, patch the deployment:
-
-```shell
-> kubectl patch deployment argocd-repo-server --patch-file=patch.yaml --namespace=argocd
-```
-
-Restart the container, and you're good to go!
+Restart the pods and you're done!
 
 ### Additional Tooling
 
-By default, the patch provided by this module uses `cuelang/cue` as the sidecar's image.
+By default, the patch provided by this module uses our own minimal image for the sidecar.
 It's a minimal image with nothing besides `cue` itself installed.
 
 Should you require additional tooling for your projects, for example if you invoke
@@ -78,26 +50,27 @@ You have several options to achieve this:
    Building your own minimal image for your use-case is recommended, as it avoids bloated third-party images
    and minimizes security risks, as the [config management plugins are granted a level of trust](https://argo-cd.readthedocs.io/en/stable/operator-manual/config-management-plugins/#config-management-plugins) by ArgoCD.
 
+1. **Use a Third-Party Image**
+   Using an image other than `ghcr.io/deepbrook/argocd-cmp-cuelang` will make it easier for your cue workflows to install
+   dependencies (if they're not already included with the image).
+
 1. **Fetch needed binaries during your cue workflows**
    This option makes sense for dependencies which you only need for very few or single repositories/apps.
    Essentially, you'll have to use `tool/http` to fetch a binary from a remote source of your choice, and
-   `tool/exec` to run it (note that `cue`'s standard library currently has no support for unpacking archives).
-
-1. **Use a Third-Party Image**
-   Using an image other than `cuelang/cue` (default) will make it easier for your cue workflows to install
-   dependencies (if they're not already included with the image). It's a good alternative to option 1, if you
-   find yourself installing the same tools over and over.
+   `tool/exec` to run it (note that you're limited to `cue`'s standard library and it currently has no support for unpacking archives).
 
 
 ## Usage
 
-The plugin can be used as soon as a `.cue` file is detected in the repository.
+The plugin can be used as soon as a `.cue` file is detected in the source directory.
+
+Note that you'll need have a module initialized in the source directory or your project's root, if you're intending to load packages.
 
 ### Generating Manifests with `cue eval`
 
-By default, the cmp will invoke `cue eval` on the Application's `spec:source:path`.
+By default, the cmp will invoke `cue eval` on the Application's `spec.source.path`.
 
-Since ArgoCD expects a stream of YAML documents as the output of the command, we can't
+Since ArgoCD expects a stream of YAML/JSON objects as the output of the command, we can't
 simply evaluate the `cue` files with `--out=yaml/--out=json`.
 
 As an example, assume the following `manifests.cue` file:
@@ -261,14 +234,6 @@ spec:
           array:
             - tagA=someValue
             ...
-```
-
-## Parameters
-
-You can inspect the available parameters by running:
-
-```
-> cue cmd parameters github.com/deepbrook/argocd-cmp-cuelang
 ```
 
 [per the official docs]: https://argo-cd.readthedocs.io/en/stable/operator-manual/config-management-plugins/#installing-a-config-management-plugin
