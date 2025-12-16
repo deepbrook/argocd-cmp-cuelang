@@ -26,7 +26,8 @@ given: params.Definitions & {for p in _given {(p.name): p & params.Definitions["
 
 // Workflow to post 'dynamic' parameters - the output is used by ArgoCD to populate fields in the WebView of an Application.
 command: "dynamic-params": {
-	out: cli.Print & {text: json.Marshal(given)}
+	parameter_announcement: [for _, p in given {p}]
+	out: cli.Print & {text: json.Marshal(parameter_announcement)}
 }
 
 // Execute a `cue` sub-command with the given CLI options.
