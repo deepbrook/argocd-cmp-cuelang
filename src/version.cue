@@ -1,4 +1,4 @@
 // This file is auto-generated - do not edit!
 package plugin
 
-version: "v0.0.10"
+version: "v0.0.11"
