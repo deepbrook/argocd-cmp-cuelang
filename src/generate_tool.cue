@@ -20,7 +20,7 @@ DEBUG: json.Unmarshal(env_vars.ARGOCD_ENV_DEBUG) & bool
 
 
 // Validate the parameters ArgoCD has given us via ARGOCD_APP_PARAMETERS, populating default values where necessary
-_given: json.Unmarshal(env_vars.ARGOCD_APP_PARAMETERS) & params.#UNMARSHALLED_ARGOCD_APP_PARAMS
+_given: (*json.Unmarshal(env_vars.ARGOCD_APP_PARAMETERS)| [] )& params.#UNMARSHALLED_ARGOCD_APP_PARAMS
 given: params.Definitions & {for p in _given {(p.name): p & params.Definitions["\(p.name)"]}}
 
 
