@@ -3,19 +3,21 @@ kind: ConfigManagementPlugin
 metadata:
   name: cuelang
 spec:
-  version: v0.15.1
+  version: v0.0.6
   init:
     command:
       - cue
     args:
-      - version
+      - mod
+      - get
+      - github.com/deepbrook/argocd-cmp-cuelang@v0.0.6
   generate:
     command:
       - cue
     args:
       - cmd
       - generate
-      - github.com/deepbrook/argocd-cmp-cuelang:plugin
+      - github.com/deepbrook/argocd-cmp-cuelang@v0.0.6:plugin
   discover:
     fileName: ./*.cue
     find:
@@ -29,16 +31,16 @@ spec:
         required: false
         string: eval
       - collectionType: string
-        string: ""
         title: CUE Package
         name: package
-        tooltip: CUE Package to run `cue` with.
+        tooltip: CUE Package to pass to `cue` command.
         required: false
+        string: ""
       - collectionType: array
-        array: []
         title: Injections
         name: tags
         tooltip: list of key=value items to inject using the `-t` flag.
+        array: []
         required: false
       - collectionType: string
         title: Format
@@ -64,6 +66,6 @@ spec:
         - cue
         - cmd
         - dynamic-params
-        - github.com/deepbrook/argocd-cmp-cuelang:plugin
+        - github.com/deepbrook/argocd-cmp-cuelang@v0.0.6:plugin
   preserveFileMode: false
   provideGitCreds: false
