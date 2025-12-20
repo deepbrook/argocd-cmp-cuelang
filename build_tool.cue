@@ -19,6 +19,16 @@ command: "publish": {
         """
     }
 
+    loadReadmeTemplate: file.Read & {
+        filename: "tools/README.md.template"
+        contents: string
+    }
+
+    updateReadme: file.Create & {
+        filename: "README.md"
+        contents: strings.Replace(loadReadmeTemplate.contents, "<VERSION>", version_tag, -1)
+    }
+
     loadConfig: exec.Run & {
         cmd: ["cue", "eval", "./config/configMap.cue", "-e", "cm_data", "--out", "yaml"]
         dir: "src/"
@@ -32,7 +42,7 @@ command: "publish": {
 
     commit: exec.Run & {
         $after: [prepareVersion, prepareConfig]
-        cmd: ["git", "commit", "-m", "chore: Release Module Version \(version_tag)", "src/version.cue", "plugin.yaml"]
+        cmd: ["git", "commit", "-m", "chore: Release Module Version \(version_tag)", "src/version.cue", "plugin.yaml", "README.md"]
     }
 
     tag: exec.Run & {
