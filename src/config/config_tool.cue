@@ -23,6 +23,10 @@ create_cm: yaml.Unmarshal(use_cm) & bool
 // - "cm" (bool): Whether to mount a configMap; defaults to 'false', as the default image comes with a plugin.yaml baked in. When set to true, a ConfigMap manifest is appended to the output.
 command: "patch": {
 
+	patched_template_spec: volumes: [
+		{emptyDir: {}, name: "cmp-tmp"},
+		if create_cm {configMap: {name: "argocd-cmp-cuelang", "defaultMode": 420}, name: "argocd-cmp-cuelang"},
+	]
 	patched_template_spec: containers: [V1.#Container & sidecar & {
 		if len(custom_image) > 0 {
 			image: custom_image
