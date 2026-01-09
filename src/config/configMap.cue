@@ -13,10 +13,6 @@ cm_data: {
 	metadata: name: "cuelang"
 	spec: {
 		version: plugin.version
-		init: {
-			command: ["cue"]
-			args: ["mod", "get", "github.com/deepbrook/argocd-cmp-cuelang@\(plugin.version)"]
-		}
 
 		generate: {
 			command: ["cue"]
