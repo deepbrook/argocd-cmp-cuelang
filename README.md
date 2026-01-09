@@ -26,13 +26,13 @@ of course entirely possible, but at your own risk.
 Generate the patch using the baked-in plugin.yaml as follows:
 
 ```shell
-> cue cmd patch github.com/deepbrook/argocd-cmp-cuelang/config@v0.0.13 > patch.yaml
+> cue cmd patch github.com/deepbrook/argocd-cmp-cuelang/config@v0.0.14 > patch.yaml
 ```
 
 If you'd like to use a separate configMap only requires `-t cm=true`:
 
 ```shell
-> cue cmd patch github.com/deepbrook/argocd-cmp-cuelang/config@v0.0.13 -t cm=true > patch.yaml
+> cue cmd patch github.com/deepbrook/argocd-cmp-cuelang/config@v0.0.14 -t cm=true > patch.yaml
 ```
 
 Inspect and apply the patch
@@ -73,7 +73,7 @@ The plugin can be used as soon as a `.cue` file is detected in the source direct
 spec:
   source:
     plugin:
-      name: cuelang-v0.0.13
+      name: cuelang-v0.0.14
 ```
 
 This will invoke `cue eval -e manifests --out=text` in your source's `path` directory.
