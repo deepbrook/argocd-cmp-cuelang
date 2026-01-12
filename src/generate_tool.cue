@@ -4,6 +4,7 @@ import (
 	"tool/exec"
 	"tool/os"
 	"tool/cli"
+	"tool/file"
 	"encoding/json"
 	"list"
 	"strings"
@@ -11,7 +12,7 @@ import (
 )
 
 env_vars: os.Getenv & {
-	ARGOCD_APP_SOURCE_PATH: string
+	ARGOCD_APP_SOURCE_PATH: string | *""
 	ARGOCD_APP_PARAMETERS:  string | *"[]"
 	ARGOCD_ENV_DEBUG:       string | *"false"
 }
@@ -23,6 +24,10 @@ DEBUG: json.Unmarshal(env_vars.ARGOCD_ENV_DEBUG) & bool
 _given: json.Unmarshal(env_vars.ARGOCD_APP_PARAMETERS) & params.#UNMARSHALLED_ARGOCD_APP_PARAMS
 given: params.Definitions & {for p in _given {(p.name): p & params.Definitions["\(p.name)"]}}
 
+log: {
+	M=msg: string
+	result: file.Append & {filename: "/dev/stderr", contents: "\(M)\n"}
+}
 
 // Workflow to post 'dynamic' parameters - the output is used by ArgoCD to populate fields in the WebView of an Application.
 command: "dynamic-params": {
@@ -48,6 +53,10 @@ command: "dynamic-params": {
 // are always honored.
 command: generate: {
 
+	log_received_params: log & {msg: "DEBUG - ARGOCD_APP_PARAMETERS: \(env_vars.ARGOCD_APP_PARAMETERS)"}
+	log_parsed_params: log & {msg: "DEBUG - Parsed Parameters: \(json.Marshal(given)) "}
+	log_received_path: log & {msg: "DEBUG - ARGOCD_APP_PARAMETERS: \(env_vars.ARGOCD_APP_SOURCE_PATH)"}
+
 	options: [...string] | *[]
 
 	if given["cue-command"].string == "eval" {
@@ -67,7 +76,7 @@ command: generate: {
 		[for t in given.tags.array {"-t=\(t)"}], // Always add -t/--inject parameters
 	])
 
-	debug: cli.Print & {text: strings.Join(["DEBUG: \(DEBUG):", strings.Join(cmd_list, " ")], " ")}
+	debug: log & {msg: "DEBUG - Generated Options: \(strings.Join(cmd_list, " "))"}
 
 	proc: exec.Run & {
 		$after: [debug]
