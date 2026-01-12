@@ -20,7 +20,7 @@ DEBUG: json.Unmarshal(env_vars.ARGOCD_ENV_DEBUG) & bool
 
 
 // Validate the parameters ArgoCD has given us via ARGOCD_APP_PARAMETERS, populating default values where necessary
-_given: (*json.Unmarshal(env_vars.ARGOCD_APP_PARAMETERS)| [] )& params.#UNMARSHALLED_ARGOCD_APP_PARAMS
+_given: json.Unmarshal(env_vars.ARGOCD_APP_PARAMETERS) & params.#UNMARSHALLED_ARGOCD_APP_PARAMS
 given: params.Definitions & {for p in _given {(p.name): p & params.Definitions["\(p.name)"]}}
 
 
@@ -49,6 +49,7 @@ command: "dynamic-params": {
 command: generate: {
 
 	options: [...string] | *[]
+
 	if given["cue-command"].string == "eval" {
 		options: [
 			if len(given.package.string) > 0 {given.package.string},
@@ -66,11 +67,10 @@ command: generate: {
 		[for t in given.tags.array {"-t=\(t)"}], // Always add -t/--inject parameters
 	])
 
-	if DEBUG {
-		debug: cli.Print & {text: strings.Join(["DEBUG: \(DEBUG):", strings.Join(cmd_list, " ")], " ")}
-	}
+	debug: cli.Print & {text: strings.Join(["DEBUG: \(DEBUG):", strings.Join(cmd_list, " ")], " ")}
 
 	proc: exec.Run & {
+		$after: [debug]
 		cmd: cmd_list
 	}
 }
