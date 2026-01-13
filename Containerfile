@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.source=https://github.com/deepbrook/argocd-cmp-cu
 
 USER 999
 COPY plugin.yaml ./
-COPY --from=CUE_BINARY /user/bin/cue /usr/bin/cue
+COPY --from=CUE_BINARY /usr/bin/cue /usr/bin/cue
 COPY src/cue-cmp /usr/bin/cue-cmp
 WORKDIR /opt/cue
 ENV CUE_CACHE_DIR /opt/cue
