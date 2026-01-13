@@ -3,14 +3,12 @@ kind: ConfigManagementPlugin
 metadata:
   name: cuelang
 spec:
-  version: v0.1.0
+  version: v0.2.0
   generate:
     command:
-      - cue
+      - /usr/bin/cue-cmp
     args:
-      - cmd
       - generate
-      - github.com/deepbrook/argocd-cmp-cuelang@v0.1.0:plugin
   discover:
     fileName: ./*.cue
     find:
@@ -56,9 +54,7 @@ spec:
         string: build
     dynamic:
       command:
-        - cue
-        - cmd
-        - dynamic-params
-        - github.com/deepbrook/argocd-cmp-cuelang@v0.1.0:plugin
+        - /usr/bin/cue-cmp
+        - params
   preserveFileMode: false
   provideGitCreds: false
