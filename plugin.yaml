@@ -3,7 +3,7 @@ kind: ConfigManagementPlugin
 metadata:
   name: cuelang
 spec:
-  version: v0.2.3
+  version: v0.2.4
   generate:
     command:
       - /usr/bin/cue-cmp
