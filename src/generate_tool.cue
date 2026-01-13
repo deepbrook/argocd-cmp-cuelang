@@ -13,7 +13,7 @@ import (
 
 env_vars: os.Getenv & {
 	ARGOCD_APP_SOURCE_PATH: string | *""
-	ARGOCD_APP_PARAMETERS:  string | *"[]"
+	ARGOCD_APP_PARAMETERS!:  string | *"[]"
 	ARGOCD_ENV_DEBUG:       string | *"false"
 }
 

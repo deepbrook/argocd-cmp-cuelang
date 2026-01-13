@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+import sys
+import os
+import json
+import subprocess
+
+command = sys.argv[1]
+
+def load_inputs():
+    loaded = json.loads(os.getenv("ARGOCD_APP_PARAMETERS", "[]"))
+    parameters = {
+        "cue-command": "eval",
+        "package": "",
+        "tags": [],
+        "output": "text",
+        "expressions": [],
+        "workflow": "build",
+    }
+
+    for param in loaded:
+        name = param["name"]
+        value = param.get("string", param.get("array"))
+        parameters[name] = value
+
+    return parameters
+
+def build_eval_options(parameters):
+    options = [parameters["package"]] if parameters["package"] else []
+    options += ["--out", parameters["output"]]
+    options += [f"-e={e}" for e in parameters["expressions"]]
+    return options
+
+def build_cmd_option(parameters):
+    options = [parameters["workflow"]]
+    options = [parameters["package"]] if parameters["package"] else []
+    return options
+
+parameters = load_inputs()
+
+if command == "generate":
+    if parameters["cue-command"] == "eval":
+        options = build_eval_options(parameters)
+    else:
+        options = build_cmd_options(parameters)
+
+    cmd_list = ["/usr/bin/cue", parameters["cue-command"]] + options + [f"-t={tag}" for tag in parameters["tags"]]
+
+    subprocess.run(cmd_list, check=True)
+
+elif command == "params":
+    announced_list = []
+    for k,v in parameters.items():
+        p = {"name": k}
+        if isinstance(v, str):
+            p["string"] = v
+        else:
+            p["array"] = v
+        announced_list.append(p)
+
+    print(json.dumps(announced_list))

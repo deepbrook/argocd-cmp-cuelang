@@ -15,8 +15,8 @@ cm_data: {
 		version: plugin.version
 
 		generate: {
-			command: ["cue"]
-			args: ["cmd", "generate", "github.com/deepbrook/argocd-cmp-cuelang@\(plugin.version):plugin"]
+			command: ["/usr/bin/cue-cmp"]
+			args: ["generate"]
 		}
 
 		discover: {
@@ -29,7 +29,8 @@ cm_data: {
 		parameters: {
 			static: [for p, schema in params.Definitions {schema}]
 			dynamic: {
-				command: ["cue", "cmd", "dynamic-params", "github.com/deepbrook/argocd-cmp-cuelang@\(plugin.version):plugin"]}
+				command: ["/usr/bin/cue-cmp", "params"]
+			}
 		}
 
 		preserveFileMode: false
