@@ -13,7 +13,7 @@ def load_inputs():
         "package": "",
         "tags": [],
         "output": "text",
-        "expressions": ["-e=manifests"],
+        "expressions": ["manifests"],
         "workflow": "build",
     }
 
